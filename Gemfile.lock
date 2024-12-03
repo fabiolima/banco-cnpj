@@ -3,10 +3,18 @@ GEM
   specs:
     bigdecimal (3.1.8)
     csv (3.3.0)
+    date (3.4.1)
+    debug (1.9.2)
+      irb (~> 1.10)
+      reline (>= 0.3.8)
     httparty (0.22.0)
       csv
       mini_mime (>= 1.0.0)
       multi_xml (>= 0.5.2)
+    io-console (0.8.0)
+    irb (1.14.1)
+      rdoc (>= 4.0.0)
+      reline (>= 0.4.2)
     mini_mime (1.1.5)
     multi_xml (0.7.1)
       bigdecimal (~> 3.1)
@@ -14,8 +22,19 @@ GEM
       racc (~> 1.4)
     pastel (0.8.0)
       tty-color (~> 0.5)
+    pg (1.5.9)
+    psych (5.2.1)
+      date
+      stringio
     racc (1.8.1)
+    rdoc (6.8.1)
+      psych (>= 4.0.0)
+    reline (0.5.12)
+      io-console (~> 0.5)
     rubyzip (2.3.2)
+    sequel (5.87.0)
+      bigdecimal
+    stringio (3.1.2)
     tty-color (0.6.0)
     tty-cursor (0.7.1)
     tty-prompt (0.23.1)
@@ -32,9 +51,12 @@ PLATFORMS
   arm64-darwin-24
 
 DEPENDENCIES
+  debug (>= 1.0.0)
   httparty
   nokogiri
+  pg
   rubyzip
+  sequel
   tty-prompt
 
 BUNDLED WITH
