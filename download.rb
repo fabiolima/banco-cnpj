@@ -6,6 +6,53 @@ require "httparty"
 require "nokogiri"
 require "tty-prompt"
 
+exclude_files = [
+  'Empresas0.zip',
+  'Empresas2.zip',
+  'Empresas3.zip',
+  'Empresas4.zip',
+  'Empresas5.zip',
+  'Empresas6.zip',
+  'Empresas7.zip',
+  'Empresas8.zip',
+  'Empresas9.zip',
+  'Estabelecimentos0.zip',
+  'Estabelecimentos2.zip',
+  'Estabelecimentos3.zip',
+  'Estabelecimentos4.zip',
+  'Estabelecimentos5.zip',
+  'Estabelecimentos6.zip',
+  'Estabelecimentos7.zip',
+  'Estabelecimentos8.zip',
+  'Estabelecimentos9.zip',
+  'Socios0.zip',
+  'Socios2.zip',
+  'Socios3.zip',
+  'Socios4.zip',
+  'Socios5.zip',
+  'Socios6.zip',
+  'Socios7.zip',
+  'Socios8.zip',
+  'Socios9.zip'
+]
+
+def download(url, path)
+  case io = OpenURI::open_uri(url)
+  when StringIO then File.open(path, 'w') { |f| f.write(io.read) }
+  when Tempfile then io.close; FileUtils.mv(io.path, path)
+  end
+end
+
+def unzip_file (file, destination, save_as)
+  Zip::File.open(file) { |zip_file|
+   zip_file.each { |f|
+     f_path=File.join(destination, save_as)
+     FileUtils.mkdir_p(File.dirname(f_path))
+     zip_file.extract(f, f_path) unless File.exist?(f_path)
+   }
+  }
+end
+
 HTTParty::Response.class_eval do
   def warn_about_nil_deprecation
   end
@@ -24,7 +71,6 @@ versions = versions_doc.css("table tr td:nth-child(2)")
   .reverse
 
 chosen_version = prompt.select("Selecione a versão desejada", versions, per_page: 10)
-
 
 # Página da versão selecionada
 version_url = "#{versions_url}/#{chosen_version}"
@@ -53,47 +99,40 @@ puts "\nProcesso encerrado." unless proceed_download
 puts "\n"
 
 available_files.each do |file|
-  puts "Baixando #{file[:path]} - #{file[:size]} \n"
-  puts "#{file[:path]} ✅\n"
+  next if exclude_files.include? file[:path]
+
+  url = version_url + file[:path]
+  filename = file[:path]
+  destination = "./files"
+
+  puts "Iniciando download #{filename} - #{file[:size]}"
+
+  if File.file? "#{destination}/#{filename}"
+    puts "Arquivo #{filename} já existe na pasta ./files"
+  else
+    download(url, "#{destination}/#{filename}")
+    puts "Download concluído: #{filename} ✅"
+  end
+
+  csv_filename = filename.gsub(/zip/, "csv")
+
+  if File.file? "#{destination}/#{csv_filename}"
+    puts "Arquivo #{csv_filename} já existe na pasta .files/. Apagando para descompactar novamente."
+    File.delete "#{destination}/#{csv_filename}"
+  end
+
+  puts "Descompactando arquivo: #{filename}"
+  unzip_file("#{destination}/#{filename}", destination, csv_filename)
+  puts "Arquivo descompactado: #{csv_filename}"
 end
 
-# chosen_file = prompt.select("Selecione o arquivo desejado", available_files)
 
-
-# puts proceed_download
-
-# puts rows
-#
-# rows.each do |item|
-#   puts item.text
-# end
-
-
-
-
-
-
-
-# def download(url, path)
-#   case io = OpenURI::open_uri(url)
-#   when StringIO then File.open(path, 'w') { |f| f.write(io.read) }
-#   when Tempfile then io.close; FileUtils.mv(io.path, path)
-#   end
-# end
 
 # url = "https://arquivos.receitafederal.gov.br/dados/cnpj/dados_abertos_cnpj/2024-11/Empresas1.zip"
 # path = "./files/Empresas1.zip"
 # # download(url, path)
 
-# def unzip_file (file, destination)
-#   Zip::File.open(file) { |zip_file|
-#    zip_file.each { |f|
-#      f_path=File.join(destination, f.name)
-#      FileUtils.mkdir_p(File.dirname(f_path))
-#      zip_file.extract(f, f_path) unless File.exist?(f_path)
-#    }
-#   }
-# end
+
 
 # # unzip_file("./files/Empresas1.zip", "./files")
 # csv_file = "./files/K3241.K03200Y1.D41109.EMPRECSV"
