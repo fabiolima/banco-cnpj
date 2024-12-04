@@ -9,14 +9,18 @@ require "pg"
 require "sequel"
 require "benchmark"
 
-require "./src/dados"
-require "./src/importer"
-require "./src/empresa_importer"
+require_relative "./src/dados"
+require_relative "./src/importer"
 
-# Dir["./src/*_importer.rb"].each { |file| require file }
+Dir["./src/*_importer.rb"].each { |file| require file }
 
-Importer.new("./files/Cnaes.csv", :cnae, %i(codigo descricao")).import
-Importer.new("./files/Paises.csv", :pais, %i(codigo descricao")).import
-Importer.new("./files/Municipios.csv", :municipio, %i(codigo descricao")).import
-Importer.new("./files/Qualificacoes.csv", :qualificacao_socio, %i(codigo descricao")).import
+Importer.new("./files/Cnaes.csv", :cnae, %i(codigo descricao")).import do |database| database.add_index :cnae, :codigo end
+Importer.new("./files/Paises.csv", :pais, %i(codigo descricao")).import do |database| database.add_index :pais, :codigo end
+Importer.new("./files/Motivos.csv", :motivo, %i(codigo descricao")).import do |database| database.add_index :motivo, :codigo end
+Importer.new("./files/Naturezas.csv", :natureza,  %i(codigo descricao)).import do |database| database.add_index :natureza, :codigo end
+Importer.new("./files/Municipios.csv", :municipio, %i(codigo descricao")).import do |database| database.add_index :municipio, :codigo end
+Importer.new("./files/Qualificacoes.csv", :qualificacao_socio, %i(codigo descricao")).import do |database| database.add_index :qualificacao_socio, :codigo end
+EstabelecimentoImporter.new("./files/Estabelecimentos*.csv", :estabelecimento, %i(cnpj_basico cnpj_ordem cnpj_dv matriz_filial nome_fantasia situacao_cadastral data_situacao_cadastral motivo_situacao_cadastral nome_cidade_exterior pais data_inicio_atividades cnae_fiscal cnae_fiscal_secundaria tipo_logradouro logradouro  numero complemento bairro cep uf municipio ddd1  telefone1 ddd2  telefone2 ddd_fax  fax correio_eletronico situacao_especial data_situacao_especial)).import
 EmpresaImporter.new("./files/Empresas*.csv", :empresa, %i(cnpj_basico razao_social natureza_juridica qualificacao_responsavel capital_social_string porte uf_responsavel)).import
+SocioImporter.new("./files/Socios*.csv", :socio_original, %i(cnpj_basico identificador_de_socio nome_socio cnpj_cpf_socio qualificacao_socio data_entrada_sociedade pais representante_legal nome_representante qualificacao_representante_legal faixa_etaria)).import
+SimplesImporter.new("./files/Simples.csv", :simples, %i(cnpj_basico opcao_simples data_opcao_simples data_exclusao_simples opcao_mei data_opcao_mei data_exclusao_mei)).import
