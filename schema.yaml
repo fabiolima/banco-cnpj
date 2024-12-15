@@ -1,0 +1,81 @@
+# cnae:
+#   csv_files_path: ./files/Cnaes.csv
+#   indexes:
+#     - codigo
+#   columns:
+#     codigo: String
+#     descricao: String
+# pais:
+#   csv_files_path: ./files/Paises.csv
+#   indexes:
+#     - codigo
+#   columns:
+#     codigo: String
+#     descricao: String
+# motivo:
+#   csv_files_path: ./files/Motivos.csv
+#   indexes:
+#     - codigo
+#   columns:
+#     codigo: String
+#     descricao: String
+# natureza:
+#   csv_files_path: ./files/Naturezas.csv
+#   indexes:
+#     - codigo
+#   columns:
+#     codigo: String
+#     descricao: String
+# municipio:
+#   csv_files_path: ./files/Municipios.csv
+#   indexes:
+#     - codigo
+#   columns:
+#     codigo: String
+#     descricao: String
+# qualificacao_socio:
+#   csv_files_path: ./files/Qualificacoes.csv
+#   indexes:
+#     - codigo
+#   columns:
+#     codigo: String
+#     descricao: String
+estabelecimento:
+  class: EstabelecimentoImporter
+  csv_files_path: ./files/Estabelecimentos*_fixed.csv
+  indexes:
+    - cnpj
+    - cnpj_basico
+    - nome_fantasia
+  columns:
+    cnpj: String
+    cnpj_basico: String
+    cnpj_ordem: String
+    cnpj_dv: String
+    matriz_filial: String
+    nome_fantasia: String
+    situacao_cadastral: String
+    data_situacao_cadastral: String
+    motivo_situacao_cadastral: String
+    nome_cidade_exterior: String
+    pais: String
+    data_inicio_atividades: String
+    cnae_fiscal: String
+    cnae_fiscal_secundaria: String
+    tipo_logradouro: String
+    logradouro: String
+    numero: String
+    complemento: String
+    bairro: String
+    cep: String
+    uf: String
+    municipio: String
+    ddd1: String
+    telefone1: String
+    ddd2: String
+    telefone2: String
+    ddd_fax: String
+    fax: String
+    correio_eletronico: String
+    situacao_especial: String
+    data_situacao_especial: String

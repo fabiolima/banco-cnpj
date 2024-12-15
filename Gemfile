@@ -2,9 +2,9 @@
 
 source "https://rubygems.org"
 
-gem 'rubyzip'
-gem 'nokogiri'
-gem 'httparty'
+gem "rubyzip"
+gem "nokogiri"
+gem "httparty"
 gem "tty-prompt"
 gem "sequel"
 gem "pg"
