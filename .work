@@ -1,0 +1,15 @@
+{
+  "tabs": [
+    {
+      "cd": ".",
+      "commands": [
+        [
+          "echo -n 'command split vertically'",
+          "echo -n 'command split vertically'"
+        ],
+        "echo -n 'command split horizontally'",
+        "echo -n 'command split horizontally'"
+      ]
+    }
+  ]
+}

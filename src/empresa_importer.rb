@@ -3,7 +3,7 @@ class EmpresaImporter < Importer
   after_import :fix_capital_social, :add_indexes
 
   def initialize(*args)
-    super(*args)
+    super
   end
 
   private

@@ -5,7 +5,7 @@ class SocioImporter < Importer
   @@final_table_name = :socio
 
   def initialize(*args)
-    super(*args)
+    super
   end
 
   private
@@ -18,13 +18,13 @@ class SocioImporter < Importer
     DB.drop_table? @@final_table_name
 
     # Creates new table with CNPJ field from "estabelecimento" join
-    DB << """
+    DB << "
       CREATE TABLE socio AS
       SELECT te.cnpj as cnpj, ts.*
       FROM socio_original ts
       LEFT JOIN estabelecimento te ON te.cnpj_basico = ts.cnpj_basico
       WHERE te.matriz_filial='1';
-    """
+    "
 
     # Remove original table "socio_original"
     DB.drop_table @table_name
