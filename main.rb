@@ -12,8 +12,9 @@ require "yaml"
 require_relative "src/dados"
 require_relative "src/importer"
 require_relative "src/downloader"
+require_relative "src/estabelecimento_importer"
 
-Dir["./src/*_importer.rb"].sort.each { |file| require file }
+# Dir["./src/*_importer.rb"].sort.each { |file| require file }
 
 # Stop annoying warning
 # See https://github.com/jnunemaker/httparty/issues/568
