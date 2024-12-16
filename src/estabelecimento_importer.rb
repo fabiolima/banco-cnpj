@@ -11,7 +11,6 @@ class EstabelecimentoImporter < Importer
   private
 
   def parse_csv
-    puts "entrei no parse csv tbm"
     @files.each do |file|
       result = Benchmark.realtime do
         parse_file file
@@ -35,8 +34,8 @@ class EstabelecimentoImporter < Importer
     puts "Processando..."
 
     index = 0
-    CSV.foreach(file, headers: false, encoding: "CP1252", col_sep: ";", quote_char: '"', skip_blanks: true) do |row|
-      break if index == 1_000_000
+    CSV.foreach(file, headers: false, encoding: "UTF-8", col_sep: ";", quote_char: '"', skip_blanks: true) do |row|
+      break if index == 10_000
       # puts row
       cnpj = row[0] + row[1] + row[2]
 
@@ -51,7 +50,7 @@ class EstabelecimentoImporter < Importer
       end
 
       begin
-        csv_out << new_row.join(";").encode("utf-8") + "\n"
+        csv_out << new_row.join(";") + "\n"
       rescue => error
         puts error.message
 

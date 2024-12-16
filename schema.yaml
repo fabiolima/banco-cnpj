@@ -1,45 +1,45 @@
-# cnae:
-#   csv_files_path: ./files/Cnaes.csv
-#   indexes:
-#     - codigo
-#   columns:
-#     codigo: String
-#     descricao: String
-# pais:
-#   csv_files_path: ./files/Paises.csv
-#   indexes:
-#     - codigo
-#   columns:
-#     codigo: String
-#     descricao: String
-# motivo:
-#   csv_files_path: ./files/Motivos.csv
-#   indexes:
-#     - codigo
-#   columns:
-#     codigo: String
-#     descricao: String
-# natureza:
-#   csv_files_path: ./files/Naturezas.csv
-#   indexes:
-#     - codigo
-#   columns:
-#     codigo: String
-#     descricao: String
-# municipio:
-#   csv_files_path: ./files/Municipios.csv
-#   indexes:
-#     - codigo
-#   columns:
-#     codigo: String
-#     descricao: String
-# qualificacao_socio:
-#   csv_files_path: ./files/Qualificacoes.csv
-#   indexes:
-#     - codigo
-#   columns:
-#     codigo: String
-#     descricao: String
+cnae:
+  csv_files_path: ./files/Cnaes.csv
+  indexes:
+    - codigo
+  columns:
+    codigo: String
+    descricao: String
+pais:
+  csv_files_path: ./files/Paises.csv
+  indexes:
+    - codigo
+  columns:
+    codigo: String
+    descricao: String
+motivo:
+  csv_files_path: ./files/Motivos.csv
+  indexes:
+    - codigo
+  columns:
+    codigo: String
+    descricao: String
+natureza:
+  csv_files_path: ./files/Naturezas.csv
+  indexes:
+    - codigo
+  columns:
+    codigo: String
+    descricao: String
+municipio:
+  csv_files_path: ./files/Municipios.csv
+  indexes:
+    - codigo
+  columns:
+    codigo: String
+    descricao: String
+qualificacao_socio:
+  csv_files_path: ./files/Qualificacoes.csv
+  indexes:
+    - codigo
+  columns:
+    codigo: String
+    descricao: String
 estabelecimento:
   class: EstabelecimentoImporter
   csv_files_path: ./files/Estabelecimentos*.csv
