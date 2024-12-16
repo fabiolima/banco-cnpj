@@ -9,6 +9,7 @@ require "pg"
 require "sequel"
 require "benchmark"
 require "yaml"
+require "rainbow/refinement"
 
 require_relative "importer_manager"
 require_relative "downloader"
