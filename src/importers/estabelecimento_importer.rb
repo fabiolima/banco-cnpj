@@ -31,10 +31,7 @@ class EstabelecimentoImporter < Importer
     puts "Arquivo temporário criado #{csv_out.path}"
     puts "Processando..."
 
-    index = 0
     CSV.foreach(file, headers: false, encoding: "UTF-8", col_sep: ";", quote_char: '"', skip_blanks: true) do |row|
-      break if index == 10_000
-      # puts row
       cnpj = row[0] + row[1] + row[2]
 
       new_row = [cnpj, *row]
@@ -64,8 +61,6 @@ class EstabelecimentoImporter < Importer
 
         csv_out << fixed_encoding
       end
-
-      index += 1
     end
 
     csv_out.close

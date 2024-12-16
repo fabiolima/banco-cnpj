@@ -1,6 +1,6 @@
 # Layout do arquivo https://www.gov.br/receitafederal/dados/cnpj-metadados.pdf
 class EmpresaImporter < Importer
-  after_import :fix_capital_social, :add_indexes
+  before_import :parse_csv
 
   def initialize(*args)
     super
@@ -8,15 +8,49 @@ class EmpresaImporter < Importer
 
   private
 
-  def fix_capital_social
-    DB.add_column @table_name, :capital_social, "decimal(20, 2)", null: true
-    DB << "UPDATE #{@table_name} set capital_social = CAST(replace(capital_social_string, ',', '.') as DECIMAL)"
-    DB.drop_column @table_name, :capital_social_string
+  def parse_csv
+    @files.each do |file|
+      result = Benchmark.realtime do
+        parse_file file
+      end
+
+      puts "Correção do arquivo finalizada em #{result} segundos."
+    end
   end
 
-  def add_indexes
-    puts "Criando indexes para a tabela #{@table_name}"
-    DB.add_index @table_name, :cnpj_basico
-    DB.add_index @table_name, :razao_social
+  def parse_file(file)
+    puts "Iniciando correção do arquivo #{file}"
+
+    current_file_dir = File.dirname file
+    current_file_name = File.basename file
+
+    output_file_name = "#{current_file_name}.parsed"
+
+    csv_out = File.open("#{current_file_dir}/#{output_file_name}", "wb")
+
+    puts "Arquivo temporário criado #{csv_out.path}"
+    puts "Processando..."
+
+    CSV.foreach(file, headers: false, encoding: "UTF-8", col_sep: ";", quote_char: '"', skip_blanks: true) do |row|
+      row[4] = row[4].gsub(",", ".") # Fix number format.
+
+      new_row = row.map do |col|
+        fixed_col = col
+          .gsub('"', '""') # corrige o caracter " dentro das colunas
+          .gsub("\\", "\\\\\\") # corrige o caracter / dentro das colunas, ruby usa 6 slashes pra dizer que é literal
+
+        "\"#{fixed_col}\""
+      end
+
+      csv_out << new_row.join(";") + "\n"
+    end
+
+    csv_out.close
+
+    puts "Delete arquivo original #{file}"
+    File.delete file
+
+    puts "Renomeando arquivo corrigido #{csv_out.path} para o nome original #{file}"
+    File.rename(csv_out.path, file)
   end
 end
