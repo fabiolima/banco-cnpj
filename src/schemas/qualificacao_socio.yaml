@@ -1,0 +1,7 @@
+qualificacao_socio:
+  csv_files_path: ./files/Qualificacoes.csv
+  indexes:
+    - codigo
+  columns:
+    codigo: String
+    descricao: String

@@ -1,0 +1,7 @@
+cnae:
+  csv_files_path: ./files/Cnaes.csv
+  indexes:
+    - codigo
+  columns:
+    codigo: String
+    descricao: String

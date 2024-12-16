@@ -1,0 +1,7 @@
+pais:
+  csv_files_path: ./files/Paises.csv
+  indexes:
+    - codigo
+  columns:
+    codigo: String
+    descricao: String
