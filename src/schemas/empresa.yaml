@@ -1,0 +1,14 @@
+empresa:
+  class: EmpresaImporter
+  csv_files_path: ./files/Empresas*.csv
+  indexes:
+    - cnpj_basico
+    - razao_social
+  columns:
+    cnpj_basico: text
+    razao_social: text
+    natureza_juridica: text
+    qualificacao_responsavel: text
+    capital_social: decimal(20, 2)
+    porte: text
+    uf_responsavel: text

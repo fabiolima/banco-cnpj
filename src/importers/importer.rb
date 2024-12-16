@@ -57,7 +57,7 @@ class Importer
       primary_key(:id)
 
       columns.each do |col, type|
-        column col.to_sym, eval(type) # rubocop:disable Security/Eval
+        column col.to_sym, type # rubocop:disable Security/Eval
       end
     end
 
@@ -65,7 +65,7 @@ class Importer
   end
 
   def read_from_csv
-    puts "Iniciando a importação dos arquivos: \n -> #{@files.join("\n ->")}"
+    puts "Iniciando a importação dos arquivos: \n -> #{@files.join("\n ->")}".blue
 
     @files.each do |file_path|
       DB.copy_into(
@@ -77,7 +77,7 @@ class Importer
       )
     end
 
-    puts "Total de linhas importadas: #{DB[@table_name.to_sym].count}"
+    puts "Total de linhas importadas: #{DB[@table_name.to_sym].count}".green
   end
 
   def add_indexes

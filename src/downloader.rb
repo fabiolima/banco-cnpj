@@ -1,3 +1,5 @@
+require "down"
+
 class Downloader
   @@prompt = TTY::Prompt.new
 
@@ -6,33 +8,33 @@ class Downloader
   DESTINATION = "./files"
 
   EXCLUDE_FILES = [
-    "Empresas0.zip",
-    "Empresas2.zip",
-    "Empresas3.zip",
-    "Empresas4.zip",
-    "Empresas5.zip",
-    "Empresas6.zip",
-    "Empresas7.zip",
-    "Empresas8.zip",
-    "Empresas9.zip",
-    "Estabelecimentos0.zip",
-    "Estabelecimentos2.zip",
-    "Estabelecimentos3.zip",
-    "Estabelecimentos4.zip",
-    "Estabelecimentos5.zip",
-    "Estabelecimentos6.zip",
-    "Estabelecimentos7.zip",
-    "Estabelecimentos8.zip",
-    "Estabelecimentos9.zip",
-    "Socios0.zip",
-    "Socios2.zip",
-    "Socios3.zip",
-    "Socios4.zip",
-    "Socios5.zip",
-    "Socios6.zip",
-    "Socios7.zip",
-    "Socios8.zip",
-    "Socios9.zip"
+    # "Empresas0.zip",
+    # "Empresas2.zip",
+    # "Empresas3.zip",
+    # "Empresas4.zip",
+    # "Empresas5.zip",
+    # "Empresas6.zip",
+    # "Empresas7.zip",
+    # "Empresas8.zip",
+    # "Empresas9.zip",
+    # "Estabelecimentos0.zip",
+    # "Estabelecimentos2.zip",
+    # "Estabelecimentos3.zip",
+    # "Estabelecimentos4.zip",
+    # "Estabelecimentos5.zip",
+    # "Estabelecimentos6.zip",
+    # "Estabelecimentos7.zip",
+    # "Estabelecimentos8.zip",
+    # "Estabelecimentos9.zip",
+    # "Socios0.zip",
+    # "Socios2.zip",
+    # "Socios3.zip",
+    # "Socios4.zip",
+    # "Socios5.zip",
+    # "Socios6.zip",
+    # "Socios7.zip",
+    # "Socios8.zip",
+    # "Socios9.zip"
   ]
 
   def start
@@ -108,11 +110,27 @@ class Downloader
   end
 
   def download(url, path)
-    case io = OpenURI.open_uri(url)
-    when StringIO then File.write(path, io.read)
-    when Tempfile then io.close
-                       FileUtils.mv(io.path, path)
+    remote_file = Down.open(url)
+
+    total_size = remote_file.size
+
+    progress_bar = ProgressBar.create(
+      total: total_size,
+      format: '%a [%B] %p%% %t'
+    )
+
+    File.open(path, 'wb') do |local_file|
+      remote_file.each_chunk do |chunk|
+        local_file.write(chunk)
+        progress_bar.progress = progress_bar.progress + chunk.size
+      end
     end
+
+    # case io = OpenURI.open_uri(url)
+    # when StringIO then File.write(path, io.read)
+    # when Tempfile then io.close
+    #                    FileUtils.mv(io.path, path)
+    # end
   end
 
   def unzip_file(file, destination, save_as)
