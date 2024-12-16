@@ -1,0 +1,7 @@
+natureza:
+  csv_files_path: ./files/Naturezas.csv
+  indexes:
+    - codigo
+  columns:
+    codigo: String
+    descricao: String

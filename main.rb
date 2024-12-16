@@ -1,38 +1,7 @@
-require "open-uri"
-require "fileutils"
-require "zip"
-require "csv"
-require "httparty"
-require "nokogiri"
-require "tty-prompt"
-require "pg"
-require "sequel"
-require "benchmark"
-require "yaml"
-require_relative "src/dados"
-require_relative "src/importer"
-require_relative "src/downloader"
-require_relative "src/estabelecimento_importer"
-
-# Dir["./src/*_importer.rb"].sort.each { |file| require file }
-
-# Stop annoying warning
-# See https://github.com/jnunemaker/httparty/issues/568
-HTTParty::Response.class_eval do
-  def warn_about_nil_deprecation
-  end
-end
+require_relative "src/dependencies"
 
 Downloader.new.start
-
-schema = YAML.load_file("schema.yaml")
-
-schema.each do |table_name, config|
-  clazz = config["class"].nil? ? Importer : Object.const_get(config["class"])
-
-  clazz.new(table_name, config).import
-end
-
+ImporterManager.new.start
 
 # Importer.new("./files/Cnaes.csv", :cnae, %i(codigo descricao")).import do |database| database.add_index :cnae, :codigo end
 # Importer.new("./files/Paises.csv", :pais, %i(codigo descricao")).import do |database| database.add_index :pais, :codigo end

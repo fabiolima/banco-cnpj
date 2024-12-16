@@ -1,0 +1,7 @@
+municipio:
+  csv_files_path: ./files/Municipios.csv
+  indexes:
+    - codigo
+  columns:
+    codigo: String
+    descricao: String

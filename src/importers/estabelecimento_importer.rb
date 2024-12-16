@@ -1,5 +1,3 @@
-require "csv"
-
 # Layout do arquivo https://www.gov.br/receitafederal/dados/cnpj-metadados.pdf
 class EstabelecimentoImporter < Importer
   before_import :parse_csv

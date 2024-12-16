@@ -8,7 +8,6 @@ module Callbacks
   end
 
   def after_import(*methods)
-    puts self.class
     @after_import = methods || []
   end
 

@@ -1,0 +1,7 @@
+motivo:
+  csv_files_path: ./files/Motivos.csv
+  indexes:
+    - codigo
+  columns:
+    codigo: String
+    descricao: String

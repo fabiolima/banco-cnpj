@@ -1,4 +1,5 @@
-require_relative "callbacks"
+require_relative "../callbacks"
+require_relative "../dados"
 
 class Importer
   include Dados
