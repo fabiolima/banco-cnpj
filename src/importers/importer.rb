@@ -1,5 +1,6 @@
 require_relative "../callbacks"
 require_relative "../dados"
+using Rainbow
 
 class Importer
   include Dados
@@ -16,6 +17,20 @@ class Importer
     @indexes = config["indexes"]
   end
 
+  def import(&block)
+    elapsed_time = Benchmark.realtime do
+      run_before_import_callbacks
+      read_from_csv
+      run_after_import_callbacks
+
+      block.call(DB) if block_given?
+    end
+
+    puts "Importação dos dados para a tabela #{@table_name} finalizada em #{elapsed_time} segundos.".green
+  end
+
+  private
+
   def run_before_import_callbacks
     Importer.before_import_callbacks&.each { |callback| send(callback) }
 
@@ -31,20 +46,6 @@ class Importer
       self.class.after_import_callbacks&.each { |callback| send(callback) }
     end
   end
-
-  def import(&block)
-    elapsed_time = Benchmark.realtime do
-      run_before_import_callbacks
-      read_from_csv
-      run_after_import_callbacks
-
-      block.call(DB) if block_given?
-    end
-
-    puts "Importação dos dados para a tabela #{@table_name} finalizada em #{elapsed_time} segundos."
-  end
-
-  private
 
   def create_table
     DB.drop_table @table_name if DB.table_exists? @table_name
@@ -93,10 +94,8 @@ class Importer
 
   def fix_encoding
     @files.each do |file_path|
-      # Abrindo o arquivo de entrada (CP1252) e o arquivo de saída (UTF-8)
       File.open(file_path, "r:CP1252") do |in_file|
         File.open("#{file_path}.temp", "w:UTF-8") do |out_file|
-          # Lê linha por linha do arquivo de entrada e escreve no arquivo de saída
           in_file.each_line do |line|
             out_file.puts(line)
           end
