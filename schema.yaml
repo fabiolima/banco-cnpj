@@ -42,7 +42,7 @@
 #     descricao: String
 estabelecimento:
   class: EstabelecimentoImporter
-  csv_files_path: ./files/Estabelecimentos*_fixed.csv
+  csv_files_path: ./files/Estabelecimentos*.csv
   indexes:
     - cnpj
     - cnpj_basico

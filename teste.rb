@@ -22,7 +22,7 @@ idx = 0
 #
 
 result = Benchmark.realtime do
-  CSV.foreach(src_dir, headers: false, encoding: "CP1252", col_sep: ";", quote_char: '"', skip_blanks: true) do |row|
+  CSV.foreach(src_dir, headers: false, encoding: "CP1252:UTF-8", col_sep: ";", quote_char: '"', skip_blanks: true) do |row|
     # break if idx == 54_000 # 7 segundos
 
     cnpj = row[0] + row[1] + row [2]
