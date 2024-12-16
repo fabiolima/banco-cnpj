@@ -23,21 +23,16 @@ HTTParty::Response.class_eval do
   end
 end
 
+Downloader.new.start
+
 schema = YAML.load_file("schema.yaml")
 
 schema.each do |table_name, config|
   clazz = config["class"].nil? ? Importer : Object.const_get(config["class"])
 
   clazz.new(table_name, config).import
-  # debugger
-  # Importer.new(table_name, config).import do |database|
-  #   # debugger
-  # end
 end
 
-# debugger
-
-# Downloader.new.start
 
 # Importer.new("./files/Cnaes.csv", :cnae, %i(codigo descricao")).import do |database| database.add_index :cnae, :codigo end
 # Importer.new("./files/Paises.csv", :pais, %i(codigo descricao")).import do |database| database.add_index :pais, :codigo end

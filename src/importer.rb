@@ -4,7 +4,7 @@ class Importer
   include Dados
   extend Callbacks
 
-  before_import :create_table
+  before_import :fix_encoding, :create_table
   after_import :add_indexes
 
   def initialize(table_name, config)
@@ -18,7 +18,7 @@ class Importer
   def run_before_import_callbacks
     Importer.before_import_callbacks&.each { |callback| send(callback) }
 
-    if self.class.respond_to? :before_import_callbacks
+    if self.class.respond_to?(:before_import_callbacks) && self.class != Importer
       self.class.before_import_callbacks&.each { |callback| send(callback) }
     end
   end
@@ -26,7 +26,7 @@ class Importer
   def run_after_import_callbacks
     Importer.after_import_callbacks&.each { |callback| send(callback) }
 
-    if self.class.respond_to? :after_import_callbacks
+    if self.class.respond_to?(:after_import_callbacks) && self.class != Importer
       self.class.after_import_callbacks&.each { |callback| send(callback) }
     end
   end
@@ -87,6 +87,22 @@ class Importer
       end
 
       puts "Index #{col} criado com sucesso. Tempo gasto: #{elapsed_time} segundos."
+    end
+  end
+
+  def fix_encoding
+    @files.each do |file_path|
+      # Abrindo o arquivo de entrada (CP1252) e o arquivo de saída (UTF-8)
+      File.open(file_path, "r:CP1252") do |in_file|
+        File.open("#{file_path}.temp", "w:UTF-8") do |out_file|
+          # Lê linha por linha do arquivo de entrada e escreve no arquivo de saída
+          in_file.each_line do |line|
+            out_file.puts(line)
+          end
+        end
+      end
+
+      FileUtils.mv("#{file_path}.temp", file_path)
     end
   end
 end
