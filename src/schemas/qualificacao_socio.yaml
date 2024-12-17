@@ -3,5 +3,5 @@ qualificacao_socio:
   indexes:
     - codigo
   columns:
-    codigo: String
-    descricao: String
+    codigo: text
+    descricao: text

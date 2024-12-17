@@ -1,5 +1,7 @@
 require "down"
 
+using Rainbow
+
 class Downloader
   @@prompt = TTY::Prompt.new
 
@@ -51,25 +53,24 @@ class Downloader
       filename = file[:path]
       file_url = "#{VERSIONS_URL}/#{chosen_version}#{filename}"
 
-      puts "Iniciando download #{filename} - #{file[:size]}"
+      puts "Iniciando download #{filename} - #{file[:size]}".cyan
 
       if File.file? "#{DESTINATION}/#{filename}"
-        puts "Arquivo #{filename} já existe na pasta ./files"
+        puts "Arquivo #{filename} já existe na pasta ./files e não será baixado novamente.".yellow
       else
         download(file_url, "#{DESTINATION}/#{filename}")
-        puts "Download concluído: #{filename} ✅"
       end
 
       csv_filename = filename.gsub("zip", "csv")
 
       if File.file? "#{DESTINATION}/#{csv_filename}"
-        puts "Arquivo #{csv_filename} já existe na pasta .files/. Apagando para descompactar novamente."
+        puts "Arquivo #{csv_filename} já existe na pasta .files/. Apagando para descompactar novamente.".yellow
         File.delete "#{DESTINATION}/#{csv_filename}"
       end
 
-      puts "Descompactando arquivo: #{filename}"
+      puts "Descompactando arquivo: #{filename}".cyan
       unzip_file("#{DESTINATION}/#{filename}", DESTINATION, csv_filename)
-      puts "Arquivo descompactado: #{csv_filename}"
+      puts "Arquivo descompactado: #{csv_filename}".green
     end
   end
 
@@ -115,22 +116,19 @@ class Downloader
     total_size = remote_file.size
 
     progress_bar = ProgressBar.create(
+      title: path,
       total: total_size,
-      format: '%a [%B] %p%% %t'
+      format: "%a [%B] %p%%"
     )
 
-    File.open(path, 'wb') do |local_file|
+    File.open(path, "wb") do |local_file|
       remote_file.each_chunk do |chunk|
         local_file.write(chunk)
         progress_bar.progress = progress_bar.progress + chunk.size
       end
     end
 
-    # case io = OpenURI.open_uri(url)
-    # when StringIO then File.write(path, io.read)
-    # when Tempfile then io.close
-    #                    FileUtils.mv(io.path, path)
-    # end
+    puts "Download concluído: #{path}".green
   end
 
   def unzip_file(file, destination, save_as)
