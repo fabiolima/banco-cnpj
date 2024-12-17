@@ -3,5 +3,5 @@ pais:
   indexes:
     - codigo
   columns:
-    codigo: String
-    descricao: String
+    codigo: text
+    descricao: text

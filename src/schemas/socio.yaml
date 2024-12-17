@@ -6,14 +6,14 @@ socio:
     - representante_legal
     - nome_representante
   columns:
-    cnpj_basico: String
-    identificador_de_socio: String
-    nome_socio: String
-    cnpj_cpf_socio: String
-    qualificacao_socio: String
-    data_entrada_sociedade: String
-    pais: String
-    representante_legal: String
-    nome_representante: String
-    qualificacao_representante_legal: String
-    faixa_etaria: String
+    cnpj_basico: text
+    identificador_de_socio: text
+    nome_socio: text
+    cnpj_cpf_socio: text
+    qualificacao_socio: text
+    data_entrada_sociedade: text
+    pais: text
+    representante_legal: text
+    nome_representante: text
+    qualificacao_representante_legal: text
+    faixa_etaria: text

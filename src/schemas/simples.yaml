@@ -3,10 +3,10 @@ simples:
   indexes:
     - cnpj_basico
   columns:
-    cnpj_basico: String
-    opcao_simples: String
-    data_opcao_simples: String
-    data_exclusao_simples: String
-    opcao_mei: String
-    data_opcao_mei: String
-    data_exclusao_mei: String
+    cnpj_basico: text
+    opcao_simples: text
+    data_opcao_simples: text
+    data_exclusao_simples: text
+    opcao_mei: text
+    data_opcao_mei: text
+    data_exclusao_mei: text

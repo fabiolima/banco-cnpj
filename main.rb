@@ -1,4 +1,4 @@
 require_relative "src/dependencies"
 
-Downloader.new.start
+# Downloader.new.start
 ImporterManager.new.start
