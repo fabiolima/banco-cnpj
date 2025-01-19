@@ -1,86 +1,54 @@
 require "down"
+require "ruby-progressbar"
+require "rainbow/refinement"
+require "fileutils"
+require "zip"
+require "tty-prompt"
+require "httparty"
+require "nokogiri"
+require 'retryable'
+require_relative "utils"
 
 using Rainbow
 
 class Downloader
-  @@prompt = TTY::Prompt.new
-
-  VERSIONS_URL = "https://arquivos.receitafederal.gov.br/dados/cnpj/dados_abertos_cnpj"
-
-  DESTINATION = "./files"
-
-  EXCLUDE_FILES = [
-    # "Empresas0.zip",
-    # "Empresas2.zip",
-    # "Empresas3.zip",
-    # "Empresas4.zip",
-    # "Empresas5.zip",
-    # "Empresas6.zip",
-    # "Empresas7.zip",
-    # "Empresas8.zip",
-    # "Empresas9.zip",
-    # "Estabelecimentos0.zip",
-    # "Estabelecimentos2.zip",
-    # "Estabelecimentos3.zip",
-    # "Estabelecimentos4.zip",
-    # "Estabelecimentos5.zip",
-    # "Estabelecimentos6.zip",
-    # "Estabelecimentos7.zip",
-    # "Estabelecimentos8.zip",
-    # "Estabelecimentos9.zip",
-    # "Socios0.zip",
-    # "Socios2.zip",
-    # "Socios3.zip",
-    # "Socios4.zip",
-    # "Socios5.zip",
-    # "Socios6.zip",
-    # "Socios7.zip",
-    # "Socios8.zip",
-    # "Socios9.zip"
-  ]
+  def initialize(**options)
+    @prompt = TTY::Prompt.new
+    @skip_existent_files = options.fetch(:skip_existent_files)
+    @destination = options.fetch(:destination)
+    @skip_files = options.fetch(:skip_files) || []
+    @versions_url = options.fetch(:versions_url)
+  end
 
   def start
-    chosen_version = choose_version
-    files = available_files(chosen_version)
+    selected_version = choose_version
+    files = available_files(selected_version)
 
-    start_download = @@prompt.yes?("#{files.map { |f| f[:path] }.join("\n")} \n#{files.size} arquivos encontrados. Deseja começar o download?")
-
-    puts "\nProcesso encerrado." unless start_download
+    return unless @prompt.yes?("#{files.map { |f| f[:path] }.join("\n")} \n#{files.size} arquivos encontrados. Deseja começar o download?")
 
     files.each do |file|
-      next if EXCLUDE_FILES.include? file[:path]
+      next if @skip_files.include? file[:path]
 
-      filename = file[:path]
-      file_url = "#{VERSIONS_URL}/#{chosen_version}#{filename}"
+      puts "Iniciando processo de download e descompactação para #{file[:path]}".cyan
 
-      puts "Iniciando download #{filename} - #{file[:size]}".cyan
+      download_url = "#{@versions_url}/#{selected_version}#{file[:path]}"
+      save_to = "#{@destination}/#{file[:path]}"
 
-      if File.file? "#{DESTINATION}/#{filename}"
-        puts "Arquivo #{filename} já existe na pasta ./files e não será baixado novamente.".yellow
-      else
-        download(file_url, "#{DESTINATION}/#{filename}")
-      end
-
-      csv_filename = filename.gsub("zip", "csv")
-
-      if File.file? "#{DESTINATION}/#{csv_filename}"
-        puts "Arquivo #{csv_filename} já existe na pasta .files/. Apagando para descompactar novamente.".yellow
-        File.delete "#{DESTINATION}/#{csv_filename}"
-      end
-
-      puts "Descompactando arquivo: #{filename}".cyan
-      unzip_file("#{DESTINATION}/#{filename}", DESTINATION, csv_filename)
-      puts "Arquivo descompactado: #{csv_filename}".green
+      download(download_url, save_to)
+      unzip_file(save_to)
+      puts "\n"
     end
   end
 
   private
 
   def available_files(chosen_version)
-    # Página da versão selecionada
-    version_url = "#{VERSIONS_URL}/#{chosen_version}"
+    version_url = "#{@versions_url}/#{chosen_version}"
 
-    version_page = HTTParty.get(version_url)
+    version_page = Retryable.retryable(tries: 5, on: [HTTParty::Error, SocketError, OpenSSL::SSL::SSLError, Errno::ECONNRESET]) do
+      HTTParty.get(version_url)
+    end
+
     version_doc = Nokogiri::HTML.parse(version_page)
 
     version_doc.css("table tr")
@@ -99,7 +67,10 @@ class Downloader
   end
 
   def choose_version
-    versions_page = HTTParty.get(VERSIONS_URL)
+    versions_page = Retryable.retryable(tries: 5, on: [HTTParty::Error, SocketError, OpenSSL::SSL::SSLError, Errno::ECONNRESET]) do
+      HTTParty.get(@versions_url)
+    end
+
     versions_doc = Nokogiri::HTML.parse(versions_page)
 
     versions = versions_doc.css("table tr td:nth-child(2)")
@@ -107,37 +78,65 @@ class Downloader
       .select { |row_text| row_text.match(/[0-9]{4}-[0-9]{2}/) }
       .reverse
 
-    @@prompt.select("Selecione a versão desejada", versions, per_page: 10)
+    @prompt.select("Selecione a versão desejada", versions, per_page: 10)
   end
 
-  def download(url, path)
-    remote_file = Down.open(url)
+  def download(url, save_to)
+    if File.file?(save_to)
+      if @skip_existent_files
+        puts "Arquivo #{save_to} já existe e não será baixado novamente.".yellow
+        return
+      else
+        puts "Deletando #{save_to} para baixar novamente.".yellow
+        File.delete save_to
+      end
+    end
 
-    total_size = remote_file.size
+    remote_file = Down.open(url, rewindable: false)
+    human_size = Utils::filesize(remote_file.size)
 
     progress_bar = ProgressBar.create(
-      title: path,
-      total: total_size,
+      title: save_to,
+      total: remote_file.size,
       format: "%a [%B] %p%%"
     )
 
-    File.open(path, "wb") do |local_file|
+    puts "Iniciando download #{save_to} - #{human_size}".cyan
+
+    File.open(save_to, "wb") do |local_file|
       remote_file.each_chunk do |chunk|
         local_file.write(chunk)
         progress_bar.progress = progress_bar.progress + chunk.size
       end
+
+      remote_file.close
     end
 
-    puts "Download concluído: #{path}".green
+    puts "Download concluído: #{save_to}".green
   end
 
-  def unzip_file(file, destination, save_as)
-    Zip::File.open(file) { |zip_file|
+  def unzip_file(file_path)
+    file_path_csv = file_path.gsub("zip", "csv")
+
+    if File.file?(file_path_csv)
+      if @skip_existent_files
+        puts "Arquivo #{file_path_csv} já existe. Pulando a descompactação.".yellow
+        return
+      else
+        puts "Apagando #{file_path_csv} já existente para ser descompactado novamente.".yellow
+        File.delete file_path_csv
+      end
+    end
+
+    puts "Descompactando arquivo: #{file_path}"
+
+    Zip::File.open(file_path) { |zip_file|
       zip_file.each { |f|
-        f_path = File.join(destination, save_as)
-        FileUtils.mkdir_p(File.dirname(f_path))
-        zip_file.extract(f, f_path) unless File.exist?(f_path)
+        FileUtils.mkdir_p(File.dirname(file_path_csv))
+        zip_file.extract(f, file_path_csv) unless File.exist?(file_path_csv)
       }
     }
+
+    puts "Arquivo descompactado: #{file_path_csv}".green
   end
 end
