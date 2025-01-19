@@ -1,2 +1,4 @@
+AllCops:
+  TargetRubyVersion: 3.2.2
 inherit_gem:
   standard: config/base.yml
