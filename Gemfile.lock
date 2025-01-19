@@ -37,6 +37,7 @@ GEM
       psych (>= 4.0.0)
     reline (0.5.12)
       io-console (~> 0.5)
+    retryable (3.0.5)
     ruby-progressbar (1.13.0)
     rubyzip (2.3.2)
     sequel (5.87.0)
@@ -64,6 +65,7 @@ DEPENDENCIES
   nokogiri
   pg
   rainbow
+  retryable
   ruby-progressbar (~> 1.8, >= 1.8.1)
   rubyzip
   sequel

@@ -13,3 +13,5 @@ gem "pg"
 gem "debug", ">= 1.0.0"
 gem "rainbow"
 gem "ruby-progressbar", "~> 1.8", ">= 1.8.1"
+
+gem "retryable"
