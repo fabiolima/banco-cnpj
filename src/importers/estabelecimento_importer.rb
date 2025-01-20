@@ -1,4 +1,6 @@
 # Layout do arquivo https://www.gov.br/receitafederal/dados/cnpj-metadados.pdf
+using Rainbow
+
 class EstabelecimentoImporter < Importer
   before_import :parse_csv
 
@@ -19,6 +21,21 @@ class EstabelecimentoImporter < Importer
   end
 
   def parse_file(file)
+    puts "Iniciando processo de concatenação #{file}".cyan
+
+    elapsed_time = Benchmark.realtime do
+      success = `sed -E 's/^\("\([^"]*\)"\);\("\([^"]*\)"\);\("\([^"]*\)"\)/"\2\4\6"; "\2"; "\4"; "\6"/' #{file} > #{file}.temp`
+
+      if success
+        FileUtils.mv("#{file}.temp", file)
+        puts "Concluído com sucesso para o arquivo #{file}".green
+      end
+    end
+
+    puts "Tempo gasto para concatenação #{elapsed_time} segundos"
+  end
+
+  def parse_file_old(file)
     puts "Iniciando correção do arquivo #{file}"
 
     current_file_dir = File.dirname file
