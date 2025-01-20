@@ -1,3 +1,9 @@
+require "csv"
+require "pg"
+require "sequel"
+require "benchmark"
+require "rainbow/refinement"
+
 require_relative "../callbacks"
 require_relative "../dados"
 using Rainbow
@@ -6,7 +12,7 @@ class Importer
   include Dados
   extend Callbacks
 
-  before_import :fix_encoding, :create_table
+  before_import :fix_files
   after_import :add_indexes
 
   def initialize(table_name, config)
@@ -18,15 +24,11 @@ class Importer
   end
 
   def import(&block)
-    elapsed_time = Benchmark.realtime do
-      run_before_import_callbacks
-      read_from_csv
-      # run_after_import_callbacks
+    run_before_import_callbacks
+    read_from_csv
+    run_after_import_callbacks
 
-      # block.call(DB) if block_given?
-    end
-
-    puts "Importação dos dados para a tabela #{@table_name} finalizada em #{elapsed_time} segundos.".green
+    # block.call(DB) if block_given?
   end
 
   private
@@ -65,21 +67,25 @@ class Importer
   end
 
   def read_from_csv
+    create_table
+
     @files.each do |file_path|
-      puts "Iniciando a importação do arquivo arquivos: #{file_path.cyan}"
+      print "\rImportando arquivo: #{file_path.cyan} para a tabela #{@table_name.cyan}"
 
-      DB.copy_into(
-        @table_name.to_sym,
-        format: :csv,
-        columns: @columns.keys.map(&:to_sym),
-        data: File.new(file_path),
-        options: "DELIMITER ';', QUOTE '\"', ESCAPE '\\'"
-      )
+      elapsed_time = Benchmark.realtime do
+        DB.copy_into(
+          @table_name.to_sym,
+          format: :csv,
+          columns: @columns.keys.map(&:to_sym),
+          data: File.new(file_path),
+          options: "DELIMITER ';', QUOTE '\"', ESCAPE '\\'"
+        )
+      end
 
-      puts "Total de linhas importadas do arquivo #{file_path}: #{DB[@table_name.to_sym].count}".green
+      print "\r✅️ Importação do arquivo #{file_path.cyan} para a tabela #{@table_name.cyan} concluída em #{elapsed_time.round(2)} segundos.\n"
     end
 
-    puts "Total de linhas importadas(de todos os arquivos): #{DB[@table_name.to_sym].count}".green
+    puts "Importação da tabela #{@table_name.cyan} concluída. Total de linhas importadas: #{DB[@table_name.to_sym].count.to_s.green}"
   end
 
   def add_indexes
@@ -95,45 +101,58 @@ class Importer
   end
 
   def detect_charset(file_path)
-    `file --mime #{file_path}`.strip.split('charset=').last
+    `file --mime #{file_path}`.strip.split("charset=").last
   rescue => e
     Rails.logger.warn "Unable to determine charset of #{file_path}"
     Rails.logger.warn "Error: #{e.message}"
   end
 
-  def fix_encoding
+  def replace_isolated_quote
+    # 's/\("[^"]*\)"\([^"]*\)/\1'\''\2/g'
+  end
+
+  def fix_files
     @files.each do |file_path|
-      # puts "Convertendo #{file_path} para UTF-8".cyan
+      remove_multiple_spaces(file_path)
+      fix_encoding(file_path)
+    end
+  end
 
-      # puts "Charset detectado: #{detect_charset file_path}".red
+  # Remove multiple spaces using sed command.
+  # See https://stackoverflow.com/questions/19242275/re-error-illegal-byte-sequence-on-mac-os-x
+  # to understand the LC_ALL trick.
+  def remove_multiple_spaces(file_path)
+    print "Limpando arquivo #{file_path}..."
 
-      # elapsed_time = Benchmark.realtime do
-      #   success = `iconv -f latin1 -t UTF-8 #{file_path} > #{file_path}.temp`
+    elapsed_time = Benchmark.realtime do
+      success = `LC_ALL=C sed 's/[ ][ ]*/ /g' #{file_path} > #{file_path}.temp`
 
-      #   puts success
-      #   if success
-      #     puts "converti com sucesso".green
-      #   end
-      # end
-
-      # FileUtils.mv("#{file_path}.temp", file_path)
-      # puts "Correção finalizada em #{elapsed_time} segundos.".green
+      if success
+        FileUtils.mv("#{file_path}.temp", file_path)
+      else
+        print "\rErro ao remover multiplos espaços arquivo #{file_path}\n".red
+      end
     end
 
+    print "\r✅️ Limpeza do arquivo #{file_path} concluída em #{elapsed_time.round(2)} segundos\n"
+  end
 
+  # Files from Receita Federal are wrongly encoded as Latin1 even with characters from UTF-8
+  # It is better to convert them as UTF-8 before import.
+  # This method uses UNIX iconv command.
+  def fix_encoding(file_path)
+    print "Convertendo #{file_path} para UTF-8..."
 
+    elapsed_time = Benchmark.realtime do
+      success = `iconv -f latin1 -t UTF-8 #{file_path} > #{file_path}.temp`
 
+      if success
+        FileUtils.mv("#{file_path}.temp", file_path)
+      else
+        print "\rErro ao converter arquivo #{file_path} para UTF-8\n".red
+      end
+    end
 
-    # @files.each do |file_path|
-    #   File.open(file_path, "r:CP1252") do |in_file|
-    #     File.open("#{file_path}.temp", "w:UTF-8") do |out_file|
-    #       in_file.each_line do |line|
-    #         out_file.puts(line)
-    #       end
-    #     end
-    #   end
-
-    #   FileUtils.mv("#{file_path}.temp", file_path)
-    # end
+    print "\r✅️ Conversão do arquivo #{file_path} para UTF-8 concluída em #{elapsed_time.round(2)} segundos.\n"
   end
 end

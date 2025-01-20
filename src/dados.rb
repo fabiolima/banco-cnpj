@@ -15,4 +15,17 @@ module Dados
 
     StringIO.new(csv_content_utf8)
   end
+
+  def initialize
+    # Definindo um manipulador para o sinal SIGINT (CTRL+C)
+    Signal.trap("INT") do
+      puts "CTRL+C detectado, desconectando do banco de dados..."
+
+      # Desconectar do banco de dados
+      DB.disconnect
+
+      # Encerrando o processo
+      exit
+    end
+  end
 end

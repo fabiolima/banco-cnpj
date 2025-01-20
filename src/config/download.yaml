@@ -9,6 +9,7 @@ skip_existent_files: false
 
 # Skips the download of following filenames.
 skip_files:
+  - Empresas0.zip
   # - Empresas1.zip
   # - Empresas2.zip
   # - Empresas3.zip
@@ -18,6 +19,7 @@ skip_files:
   # - Empresas7.zip
   # - Empresas8.zip
   # - Empresas9.zip
+  - Estabelecimentos0.zip
   # - Estabelecimentos1.zip
   # - Estabelecimentos2.zip
   # - Estabelecimentos3.zip
