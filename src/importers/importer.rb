@@ -89,14 +89,14 @@ class Importer
   end
 
   def add_indexes
-    puts "Criando indexes para as colunas #{@indexes.join(", ")}".cyan
-
     @indexes.each do |col|
+      print "\rCriando index para a coluna #{col.cyan} na tabela #{@table_name.cyan}"
+
       elapsed_time = Benchmark.realtime do
         DB.add_index @table_name, col.to_sym
       end
 
-      puts "Index #{col} criado com sucesso. Tempo gasto: #{elapsed_time} segundos.".green
+      print "\r✅️ Index para coluna #{col.cyan} na tabela #{@table_name.cyan} criado com sucesso em #{elapsed_time.round(2)} segundos.\n"
     end
   end
 
