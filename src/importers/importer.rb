@@ -26,7 +26,7 @@ class Importer
   def import(&block)
     run_before_import_callbacks
     read_from_csv
-    run_after_import_callbacks
+    # run_after_import_callbacks
 
     # block.call(DB) if block_given?
   end
@@ -115,7 +115,42 @@ class Importer
     @files.each do |file_path|
       remove_multiple_spaces(file_path)
       fix_encoding(file_path)
+      fix_literal_slashes(file_path)
+      remove_isolated_quote(file_path)
     end
+  end
+
+  # Captures quotes that confuses PostgreSQL.
+  # Example: "aaaa"bb"
+  def remove_isolated_quote(file_path)
+    print "Removendo caracteres de mal formação no arquivo #{file_path}"
+
+    elapsed_time = Benchmark.realtime do
+      success = `LC_ALL=C sed -E 's/^""([^;]*)/\"\\1/; s/; ""([^;]*)/; \"\\1/g' #{file_path} > #{file_path}.temp`
+
+      if success
+        FileUtils.mv("#{file_path}.temp", file_path)
+      end
+    end
+
+    print "\r✅️ Remoção de caracteres no arquivo #{file_path} concluída em #{elapsed_time.round(2)} segundos.\n"
+  end
+
+  # Captures single slash \ and duplicate \\
+  def fix_literal_slashes(file_path)
+    print "Corrigindo uso de barra invertida no arquivo #{file_path}..."
+
+    elapsed_time = Benchmark.realtime do
+      success = `LC_ALL=C sed 's/\\\\/\\\\\\\\/g' #{file_path} > #{file_path}.temp`
+
+      if success
+        FileUtils.mv("#{file_path}.temp", file_path)
+      else
+        print "\rErro ao corrigir o uso da barra invertida no arquivo #{file_path}\n".red
+      end
+    end
+
+    print "\r✅️ Correção da barra invertida no arquivo #{file_path} concluída em #{elapsed_time.round(2)} segundos\n"
   end
 
   # Remove multiple spaces using sed command.
@@ -139,12 +174,12 @@ class Importer
 
   # Files from Receita Federal are wrongly encoded as Latin1 even with characters from UTF-8
   # It is better to convert them as UTF-8 before import.
-  # This method uses UNIX iconv command.
+  # This method uses UNIX iconv command and sed for removing unprintable characters.
   def fix_encoding(file_path)
     print "Convertendo #{file_path} para UTF-8..."
 
     elapsed_time = Benchmark.realtime do
-      success = `iconv -f latin1 -t UTF-8 #{file_path} > #{file_path}.temp`
+      success = `iconv -f latin1 -t UTF-8//TRANSLIT #{file_path} | sed 's/[^[:print:]\t]//g' > #{file_path}.temp`
 
       if success
         FileUtils.mv("#{file_path}.temp", file_path)
