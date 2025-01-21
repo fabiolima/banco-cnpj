@@ -20,23 +20,6 @@ class EmpresaImporter < Importer
     end
   end
 
-  # Captures single slash \ and duplicate \\
-  def fix_literal_slashes(file_path)
-    print "Corrigindo uso de barra invertida no arquivo #{file_path}..."
-
-    elapsed_time = Benchmark.realtime do
-      success = `LC_ALL=C sed 's/\\\\/\\\\\\\\/g' #{file_path} > #{file_path}.temp`
-
-      if success
-        FileUtils.mv("#{file_path}.temp", file_path)
-      else
-        print "\rErro ao corrigir o uso da barra invertida no arquivo #{file_path}\n".red
-      end
-    end
-
-    print "\r✅️ Correção da barra invertida no arquivo #{file_path} concluída em #{elapsed_time.round(2)} segundos\n"
-  end
-
   # Captures the 5th column and replaces the "," by "."
   # Example: "12000,00" -> "12000.00"
   def fix_decimal_separator(file_path)

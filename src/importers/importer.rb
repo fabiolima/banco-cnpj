@@ -107,10 +107,6 @@ class Importer
     Rails.logger.warn "Error: #{e.message}"
   end
 
-  def replace_isolated_quote
-    # 's/\("[^"]*\)"\([^"]*\)/\1'\''\2/g'
-  end
-
   def fix_files
     @files.each do |file_path|
       remove_multiple_spaces(file_path)
