@@ -1,6 +1,9 @@
-# Layout do arquivo https://www.gov.br/receitafederal/dados/cnpj-metadados.pdf
+require "benchmark"
+require "rainbow/refinement"
+
 using Rainbow
 
+# Layout do arquivo https://www.gov.br/receitafederal/dados/cnpj-metadados.pdf
 class EstabelecimentoImporter < Importer
   before_import :make_cnpj_column
 
