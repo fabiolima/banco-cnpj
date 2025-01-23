@@ -27,8 +27,6 @@ class Importer
     run_before_import_callbacks
     read_from_csv
     run_after_import_callbacks
-
-    # block.call(DB) if block_given?
   end
 
   private
