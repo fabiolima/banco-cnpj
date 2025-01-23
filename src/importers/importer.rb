@@ -26,7 +26,7 @@ class Importer
   def import(&block)
     run_before_import_callbacks
     read_from_csv
-    # run_after_import_callbacks
+    run_after_import_callbacks
 
     # block.call(DB) if block_given?
   end
@@ -59,7 +59,7 @@ class Importer
       primary_key(:id)
 
       columns.each do |col, type|
-        column col.to_sym, type # rubocop:disable Security/Eval
+        column col.to_sym, type
       end
     end
 
@@ -98,13 +98,6 @@ class Importer
 
       print "\r✅️ Index para coluna #{col.cyan} na tabela #{@table_name.cyan} criado com sucesso em #{elapsed_time.round(2)} segundos.\n"
     end
-  end
-
-  def detect_charset(file_path)
-    `file --mime #{file_path}`.strip.split("charset=").last
-  rescue => e
-    Rails.logger.warn "Unable to determine charset of #{file_path}"
-    Rails.logger.warn "Error: #{e.message}"
   end
 
   def fix_files
