@@ -1,4 +1,5 @@
 socio:
+  class: SocioImporter
   csv_files_path: ./files/Socios*.csv
   indexes:
     - cnpj_cpf_socio
