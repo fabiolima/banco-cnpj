@@ -9,3 +9,4 @@ skip_existent_files: false
 
 # Skips the download of following filenames.
 skip_files:
+  -
