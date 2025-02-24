@@ -28,5 +28,9 @@ Then navigate to project's root folder and run `ruby main.rb` and follow the ins
 #### Download Status
 ![image](https://github.com/user-attachments/assets/cc477b40-396e-4bd8-8f01-16f285208fb2)
 
+### Fixing files and import
+![image](https://github.com/user-attachments/assets/db95e85b-69df-482d-8d11-3b411ecd6ca7)
+
+
 #### Database ready to use
 ![image](https://github.com/user-attachments/assets/9fcb9eda-b323-4fa3-8446-bc78dcffe3d6)
