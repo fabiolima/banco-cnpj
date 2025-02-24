@@ -5,11 +5,9 @@ require "benchmark"
 require "rainbow/refinement"
 
 require_relative "../callbacks"
-require_relative "../dados"
 using Rainbow
 
 class Importer
-  include Dados
   extend Callbacks
 
   before_import :fix_files
@@ -21,6 +19,19 @@ class Importer
     @files = Dir[config["csv_files_path"]]
     @columns = config["columns"]
     @indexes = config["indexes"]
+
+    start_database_connection
+  end
+
+  def start_database_connection
+    config = YAML.load_file("./src/config/database.yaml").transform_keys!(&:to_sym)
+    @database = Sequel.connect(config[:database_url])
+
+    Signal.trap("INT") do
+      puts "CTRL+C detectado, desconectando do banco de dados..."
+      @database.disconnect
+      exit
+    end
   end
 
   def import(&block)
@@ -48,12 +59,12 @@ class Importer
   end
 
   def create_table
-    DB.drop_table @table_name if DB.table_exists? @table_name
+    @database.drop_table @table_name if @database.table_exists? @table_name
 
-    # Prevent internal conflict with @columns inside DB.create_table context
+    # Prevent internal conflict with @columns inside @database.create_table context
     columns = @columns
 
-    DB.create_table @table_name.to_sym do
+    @database.create_table @table_name.to_sym do
       primary_key(:id)
 
       columns.each do |col, type|
@@ -71,7 +82,7 @@ class Importer
       print "\rImportando arquivo: #{file_path.cyan} para a tabela #{@table_name.cyan}"
 
       elapsed_time = Benchmark.realtime do
-        DB.copy_into(
+        @database.copy_into(
           @table_name.to_sym,
           format: :csv,
           columns: @columns.keys.map(&:to_sym),
@@ -83,7 +94,7 @@ class Importer
       print "\r✅️ Importação do arquivo #{file_path.cyan} para a tabela #{@table_name.cyan} concluída em #{elapsed_time.round(2)} segundos.\n"
     end
 
-    puts "Importação da tabela #{@table_name.cyan} concluída. Total de linhas importadas: #{DB[@table_name.to_sym].count.to_s.green}"
+    puts "Importação da tabela #{@table_name.cyan} concluída. Total de linhas importadas: #{@database[@table_name.to_sym].count.to_s.green}"
   end
 
   def add_indexes
@@ -91,7 +102,7 @@ class Importer
       print "\rCriando index para a coluna #{col.cyan} na tabela #{@table_name.cyan}"
 
       elapsed_time = Benchmark.realtime do
-        DB.add_index @table_name, col.to_sym
+        @database.add_index @table_name, col.to_sym
       end
 
       print "\r✅️ Index para coluna #{col.cyan} na tabela #{@table_name.cyan} criado com sucesso em #{elapsed_time.round(2)} segundos.\n"

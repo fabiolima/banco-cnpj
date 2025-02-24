@@ -19,10 +19,10 @@ class SocioImporter < Importer
     elapsed_time = Benchmark.realtime do
       tmp_table_name = "socio_join"
 
-      DB.drop_table tmp_table_name if DB.table_exists? tmp_table_name
+      @database.drop_table tmp_table_name if @database.table_exists? tmp_table_name
 
       # Create table joining with estabelecimento.
-      DB << "
+      @database << "
         CREATE TABLE #{tmp_table_name} AS
         SELECT te.cnpj as cnpj, ts.*
         FROM socio ts
@@ -31,10 +31,10 @@ class SocioImporter < Importer
       "
 
       # Drop socio's table.
-      DB.drop_table @table_name
+      @database.drop_table @table_name
 
       # Rename the join table to original table name.
-      DB << "ALTER TABLE #{tmp_table_name} RENAME TO #{@table_name};"
+      @database << "ALTER TABLE #{tmp_table_name} RENAME TO #{@table_name};"
 
       add_indexes
     end
