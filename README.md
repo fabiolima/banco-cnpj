@@ -13,9 +13,10 @@ This CLI app follows 4 steps to get the database running:
 
 ### Usage
 
-After cloning this repo the only configuration needed is your database URL connection, so open the `src/config/database.yml`
-and put your URL there.
-Then navigate to project's root folder and run `ruby main.rb` and follow the instructions.
+- Clone the repo
+- Run `bundle install` to install dependencies
+- Edit `src/config/database.yaml` with your database connection URL.
+- Run `ruby main.rb`.
 
 ### Screenshots
 
